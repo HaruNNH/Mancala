@@ -1,6 +1,5 @@
 (() => {
   const INITIAL = 4;
-
   const COLOR_CLASSES = [
     'c-red',
     'c-orange',
