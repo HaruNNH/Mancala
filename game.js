@@ -1,15 +1,8 @@
 (() => {
   const INITIAL = 4;
-
   const COLOR_CLASSES = [
-    'c-red',
-    'c-orange',
-    'c-yellow',
-    'c-green',
-    'c-cyan',
-    'c-blue',
-    'c-purple',
-    'c-pink'
+    'c-red', 'c-orange', 'c-yellow', 'c-green',
+    'c-cyan', 'c-blue', 'c-purple', 'c-pink'
   ];
 
   /* =========================================================
@@ -74,21 +67,14 @@
     const gainNode = audioCtx.createGain();
 
     source.buffer = soundBuffer;
-    source.playbackRate.value =
-      0.97 + Math.random() * 0.06;
-
+    source.playbackRate.value = 0.97 + Math.random() * 0.06;
     gainNode.gain.value = 0.9;
 
     source.connect(gainNode);
     gainNode.connect(audioCtx.destination);
 
-    source.start(
-      0,
-      clip.start,
-      clip.duration
-    );
+    source.start(0, clip.start, clip.duration);
   }
-
 
   /* =========================================================
      DOM
@@ -116,27 +102,20 @@
   const rightGoalCount =
     document.getElementById('rightGoalCount');
 
-  const goalLeft =
-    document.getElementById('goalLeft');
-
-  const goalRight =
-    document.getElementById('goalRight');
+  const goalLeft = document.getElementById('goalLeft');
+  const goalRight = document.getElementById('goalRight');
 
   const settingsError =
     document.getElementById('settingsError');
 
-  const levelEl =
-    document.getElementById('level');
-
-  const ruleEl =
-    document.getElementById('rule');
+  const levelEl = document.getElementById('level');
+  const ruleEl = document.getElementById('rule');
 
   const thinking =
     document.getElementById('thinking');
 
   const resultText =
     document.getElementById('resultText');
-
 
   /* =========================================================
      GAME STATE
@@ -145,85 +124,27 @@
   let boardStones =
     Array(14).fill(null).map(() => []);
 
-  let board =
-    Array(14).fill(0);
+  let board = Array(14).fill(0);
 
   let current = 'human';
 
   let cpuLevel = 1;
 
-  let selectedRule = 'basic';
-
   let busy = false;
 
   let isPaused = false;
 
-
-  /* =========================================================
-     RULE INFORMATION
-     ========================================================= */
-
-  function isKahala() {
-    return selectedRule === 'kahala';
-  }
-
-  function ownGoal(player) {
-    return player === 'human' ? 6 : 13;
-  }
-
-  function opponentGoal(player) {
-    return player === 'human' ? 13 : 6;
-  }
-
-  function isHumanPit(i) {
-    return i >= 0 && i < 6;
-  }
-
-  function isPlayerPit(i, player) {
-    if (player === 'human') {
-      return i >= 0 && i <= 5;
-    }
-
-    return i >= 7 && i <= 12;
-  }
-
-
-  /* =========================================================
-     NEXT POSITION
-     ========================================================= */
-
-  function nextIndexBasic(i) {
-    return (i + 1) % 14;
-  }
-
   /*
-    Kahala:
-
-    YOUは13を飛ばす
-    CPUは6を飛ばす
+    今回はカハラを使用。
+    HTML側のRule selectで value="kahala" を選択した場合も
+    明示的にカハラとして扱う。
   */
-
-  function nextIndexKahala(i, player) {
-    let next = (i + 1) % 14;
-
-    if (next === opponentGoal(player)) {
-      next = (next + 1) % 14;
-    }
-
-    return next;
+  function isKahalah() {
+    return ruleEl.value === 'kahala';
   }
-
-  function nextIndex(i, player) {
-    if (isKahala()) {
-      return nextIndexKahala(i, player);
-    }
-
-    return nextIndexBasic(i);
-  }
-
 
   /* =========================================================
-     CREATE PITS
+     BOARD
      ========================================================= */
 
   function createPits() {
@@ -235,10 +156,13 @@
     if (isPortrait) {
 
       /*
-        スマホ版
+        スマホ
 
-        左列：YOU 0〜5
-        右列：CPU 12〜7
+        左列：
+        0〜5 YOU
+
+        右列：
+        12〜7 CPU
       */
 
       for (let row = 0; row < 6; row++) {
@@ -250,6 +174,7 @@
 
         dLeft.className = 'pit bottom';
         dLeft.dataset.index = String(leftIdx);
+
         dLeft.innerHTML =
           '<span class="count">0</span>';
 
@@ -288,10 +213,10 @@
     } else {
 
       /*
-        PC版
+        PC
 
-        上：CPU 12〜7
-        下：YOU 0〜5
+        上：12〜7 CPU
+        下：0〜5 YOU
       */
 
       for (let i = 12; i >= 7; i--) {
@@ -314,7 +239,6 @@
 
         pitsEl.appendChild(d);
       }
-
 
       for (let i = 0; i < 6; i++) {
 
@@ -339,7 +263,6 @@
     }
   }
 
-
   window.addEventListener('resize', () => {
     createPits();
     render();
@@ -347,7 +270,7 @@
 
 
   /* =========================================================
-     RENDER STONES
+     STONES
      ========================================================= */
 
   function renderStones(
@@ -371,106 +294,99 @@
         '(orientation: portrait)'
       ).matches;
 
+    visibleColors.forEach((colorClass, k) => {
 
-    visibleColors.forEach(
-      (colorClass, k) => {
+      const s =
+        document.createElement('span');
 
-        const s =
-          document.createElement('span');
+      s.className =
+        `stone ${colorClass}`;
 
-        s.className =
-          `stone ${colorClass}`;
+      if (!isGoal) {
 
+        const angle =
+          (k / Math.max(1, count))
+          * Math.PI * 2;
 
-        if (!isGoal) {
+        const r =
+          isPortrait
+            ? (count <= 6 ? 10 : 15)
+            : (count <= 6 ? 20 : 26);
 
-          const angle =
-            (k / Math.max(1, count))
-            * Math.PI * 2;
+        s.style.transform =
+          `translate(
+            ${Math.cos(angle) * r}px,
+            ${Math.sin(angle) * r}px
+          )`;
 
-          const r =
-            isPortrait
-              ? (count <= 6 ? 10 : 15)
-              : (count <= 6 ? 20 : 26);
+      } else {
+
+        if (isPortrait) {
+
+          const cols =
+            Math.min(count, 12);
+
+          const rows =
+            Math.ceil(count / cols);
+
+          const spacingX = 20;
+          const spacingY = 18;
+
+          const col = k % cols;
+          const row = Math.floor(k / cols);
+
+          const offsetX =
+            (col - (cols - 1) / 2)
+            * spacingX;
+
+          const offsetY =
+            (row - (rows - 1) / 2)
+            * spacingY;
 
           s.style.transform =
             `translate(
-              ${Math.cos(angle) * r}px,
-              ${Math.sin(angle) * r}px
+              ${offsetX}px,
+              ${offsetY}px
             )`;
 
         } else {
 
-          if (isPortrait) {
+          const col =
+            k % 2 === 0 ? -14 : 14;
 
-            const cols =
-              Math.min(count, 12);
+          const rowHeight =
+            Math.min(
+              20,
+              180 / Math.ceil(count / 2)
+            );
 
-            const rows =
-              Math.ceil(count / cols);
+          const row =
+            (
+              Math.floor(k / 2)
+              - (count / 4)
+            ) * rowHeight;
 
-            const spacingX = 20;
-            const spacingY = 18;
+          const offsetX =
+            col + Math.sin(k * 3) * 3;
 
-            const col =
-              k % cols;
+          const offsetY =
+            row + Math.cos(k * 2) * 3;
 
-            const row =
-              Math.floor(k / cols);
-
-            const offsetX =
-              (col - (cols - 1) / 2)
-              * spacingX;
-
-            const offsetY =
-              (row - (rows - 1) / 2)
-              * spacingY;
-
-            s.style.transform =
-              `translate(
-                ${offsetX}px,
-                ${offsetY}px
-              )`;
-
-          } else {
-
-            const col =
-              k % 2 === 0 ? -14 : 14;
-
-            const rowHeight =
-              Math.min(
-                20,
-                180 / Math.ceil(count / 2)
-              );
-
-            const row =
-              (
-                Math.floor(k / 2)
-                - (count / 4)
-              ) * rowHeight;
-
-            const offsetX =
-              col + Math.sin(k * 3) * 3;
-
-            const offsetY =
-              row + Math.cos(k * 2) * 3;
-
-            s.style.transform =
-              `translate(
-                ${offsetX}px,
-                ${offsetY}px
-              )`;
-          }
+          s.style.transform =
+            `translate(
+              ${offsetX}px,
+              ${offsetY}px
+            )`;
         }
-
-        container.appendChild(s);
       }
-    );
+
+      container.appendChild(s);
+    });
   }
 
 
   /* =========================================================
-     RENDER BOARD
+     RENDER
      ========================================================= */
 
   function render() {
@@ -479,7 +395,6 @@
       board[i] =
         boardStones[i].length;
     }
-
 
     document
       .querySelectorAll('.pit')
@@ -546,7 +461,6 @@
 
     let pool = [];
 
-
     COLOR_CLASSES.forEach(color => {
 
       for (let i = 0; i < 6; i++) {
@@ -566,14 +480,8 @@
           Math.random() * (i + 1)
         );
 
-      [
-        pool[i],
-        pool[j]
-      ] =
-      [
-        pool[j],
-        pool[i]
-      ];
+      [pool[i], pool[j]] =
+        [pool[j], pool[i]];
     }
 
 
@@ -600,6 +508,103 @@
 
 
   /* =========================================================
+     BASIC GAME INFORMATION
+     ========================================================= */
+
+  function isHumanPit(i) {
+    return i >= 0 && i <= 5;
+  }
+
+  function ownGoal(player) {
+    return player === 'human'
+      ? 6
+      : 13;
+  }
+
+  function opponentGoal(player) {
+    return player === 'human'
+      ? 13
+      : 6;
+  }
+
+  function isOwnPit(i, player) {
+
+    if (player === 'human') {
+      return i >= 0 && i <= 5;
+    }
+
+    return i >= 7 && i <= 12;
+  }
+
+  function nextKahalaIndex(i, player) {
+
+    let next =
+      (i + 1) % 14;
+
+    /*
+      YOUはCPUゴール13を飛ばす
+    */
+
+    if (
+      player === 'human' &&
+      next === 13
+    ) {
+      next = 0;
+    }
+
+    /*
+      CPUはYOUゴール6を飛ばす
+    */
+
+    if (
+      player === 'cpu' &&
+      next === 6
+    ) {
+      next = 7;
+    }
+
+    return next;
+  }
+
+
+  /* =========================================================
+     OPPOSITE PIT
+     ========================================================= */
+
+  function oppositePit(i) {
+
+    /*
+      対面
+
+      0 ↔ 12
+      1 ↔ 11
+      2 ↔ 10
+      3 ↔ 9
+      4 ↔ 8
+      5 ↔ 7
+    */
+
+    const map = {
+      0: 12,
+      1: 11,
+      2: 10,
+      3: 9,
+      4: 8,
+      5: 7,
+
+      7: 5,
+      8: 4,
+      9: 3,
+      10: 2,
+      11: 1,
+      12: 0
+    };
+
+    return map[i];
+  }
+
+
+  /* =========================================================
      LEGAL MOVES
      ========================================================= */
 
@@ -612,7 +617,7 @@
 
     if (player === 'human') {
 
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i <= 5; i++) {
 
         if (state[i] > 0) {
           arr.push(i);
@@ -634,168 +639,108 @@
 
 
   /* =========================================================
-     KAHALA OPPOSITE
+     KALAHA MOVE SIMULATION
      ========================================================= */
 
-  function oppositePit(index) {
-
-    const opposites = {
-      0: 12,
-      1: 11,
-      2: 10,
-      3: 9,
-      4: 8,
-      5: 7,
-
-      7: 5,
-      8: 4,
-      9: 3,
-      10: 2,
-      11: 1,
-      12: 0
-    };
-
-    return opposites[index];
-  }
-
-
-  /* =========================================================
-     KAHALA MOVE
-     ========================================================= */
-
-  async function makeMoveKahala(
+  function simulateKahala(
+    state,
     start,
-    player,
-    animate = true
+    player
   ) {
 
-    if (
-      boardStones[start].length === 0
-    ) {
-      return false;
-    }
+    const s = state.slice();
 
+    let stones = s[start];
 
-    let hand =
-      [...boardStones[start]];
-
-    boardStones[start] = [];
-
-    render();
-
+    s[start] = 0;
 
     let pos = start;
 
-    let lastWasCapture = false;
+    if (stones <= 0) {
+      return {
+        state: s,
+        last: start,
+        again: false
+      };
+    }
 
 
-    while (hand.length > 0) {
+    /*
+      石を1個ずつ配る
+      相手ゴールは飛ばす
+    */
+
+    while (stones > 0) {
 
       pos =
-        nextIndexKahala(
+        nextKahalaIndex(
           pos,
           player
         );
 
-
-      /*
-        最後の石を置く前に、
-        そのポケットが空だったかを記録。
-      */
-
-      const wasEmpty =
-        boardStones[pos].length === 0;
+      s[pos]++;
+      stones--;
+    }
 
 
-      boardStones[pos].push(
-        hand.pop()
-      );
+    /*
+      よこどり
 
-      render();
+      最後の石が自分の陣地にある
+      空ポケットに入った場合
+    */
 
+    let captured = 0;
 
-      if (animate) {
+    if (
+      isOwnPit(pos, player) &&
+      s[pos] === 1
+    ) {
 
-        playGlassStoneSound();
-
-        await sleep(220);
-      }
-
-
-      /*
-        最後の石だった場合だけ
-        空ポケット判定を行う。
-      */
+      const opposite =
+        oppositePit(pos);
 
       if (
-        hand.length === 0 &&
-        isPlayerPit(pos, player) &&
-        wasEmpty
+        opposite !== undefined &&
+        s[opposite] > 0
       ) {
 
-        const opposite =
-          oppositePit(pos);
+        captured =
+          s[opposite];
 
-        const captured =
-          boardStones[opposite].length;
+        s[opposite] = 0;
 
+        s[pos] = 0;
 
-        /*
-          自分が今置いた1個 + 対面全部
-          を自分のゴールへ。
-        */
-
-        const ownStone =
-          boardStones[pos].pop();
-
-        if (ownStone) {
-
-          boardStones[
-            ownGoal(player)
-          ].push(ownStone);
-        }
-
-
-        const oppositeStones =
-          boardStones[opposite].splice(
-            0,
-            boardStones[opposite].length
-          );
-
-
-        boardStones[
-          ownGoal(player)
-        ].push(
-          ...oppositeStones
-        );
-
-
-        lastWasCapture = true;
-
-        render();
-
-
-        if (animate && captured > 0) {
-
-          playGlassStoneSound();
-
-          await sleep(300);
-        }
+        s[ownGoal(player)] +=
+          captured + 1;
       }
     }
 
 
-    return (
-      pos === ownGoal(player)
-    );
+    /*
+      よこどりが起きなかった場合でも、
+      最後の石が自分のゴールなら追加ターン
+    */
+
+    const again =
+      pos === ownGoal(player);
+
+
+    return {
+      state: s,
+      last: pos,
+      again,
+      captured
+    };
   }
 
 
   /* =========================================================
-     BASIC MOVE
+     ACTUAL MOVE
      ========================================================= */
 
-  async function makeMoveBasic(
+  async function makeKahalaMove(
     start,
     player,
     animate = true
@@ -822,11 +767,13 @@
     while (hand.length > 0) {
 
       pos =
-        nextIndexBasic(pos);
+        nextKahalaIndex(
+          pos,
+          player
+        );
 
-      boardStones[pos].push(
-        hand.pop()
-      );
+      boardStones[pos]
+        .push(hand.pop());
 
       render();
 
@@ -840,38 +787,57 @@
     }
 
 
-    return (
-      pos === ownGoal(player)
-    );
-  }
+    /*
+      最後の石が自分の陣地の
+      空ポケットだった場合のよこどり
+    */
 
+    if (
+      isOwnPit(pos, player) &&
+      boardStones[pos].length === 1
+    ) {
 
-  /* =========================================================
-     MAKE MOVE
-     ========================================================= */
+      const opposite =
+        oppositePit(pos);
 
-  async function makeMove(
-    start,
-    player,
-    animate = true
-  ) {
+      if (
+        opposite !== undefined &&
+        boardStones[opposite].length > 0
+      ) {
 
-    if (isKahala()) {
+        const captured =
+          boardStones[opposite];
 
-      return await makeMoveKahala(
-        start,
-        player,
-        animate
-      );
+        boardStones[opposite] = [];
 
-    } else {
+        const ownStone =
+          boardStones[pos];
 
-      return await makeMoveBasic(
-        start,
-        player,
-        animate
-      );
+        boardStones[pos] = [];
+
+        boardStones[
+          ownGoal(player)
+        ].push(
+          ...ownStone,
+          ...captured
+        );
+
+        render();
+
+        if (animate) {
+          playGlassStoneSound();
+          await sleep(250);
+        }
+      }
     }
+
+
+    /*
+      最後の石が自分のゴールなら
+      追加ターン
+    */
+
+    return pos === ownGoal(player);
   }
 
 
@@ -879,6 +845,171 @@
     return new Promise(
       resolve => setTimeout(resolve, ms)
     );
+  }
+
+
+  /* =========================================================
+     END CONDITION
+     ========================================================= */
+
+  function isSideEmpty(
+    player,
+    state = board
+  ) {
+
+    if (player === 'human') {
+
+      return state
+        .slice(0, 6)
+        .every(v => v === 0);
+
+    }
+
+    return state
+      .slice(7, 13)
+      .every(v => v === 0);
+  }
+
+
+  /*
+    ゲーム終了時、
+
+    残っている側の陣地にある石を
+    その側のゴールへ全部移す。
+  */
+
+  async function collectRemainingStones() {
+
+    const humanEmpty =
+      isSideEmpty('human');
+
+    const cpuEmpty =
+      isSideEmpty('cpu');
+
+
+    if (!humanEmpty && !cpuEmpty) {
+      return;
+    }
+
+
+    /*
+      YOU側に残っている石
+      → YOUゴール6
+    */
+
+    if (!humanEmpty) {
+
+      for (let i = 0; i <= 5; i++) {
+
+        if (boardStones[i].length > 0) {
+
+          boardStones[6].push(
+            ...boardStones[i]
+          );
+
+          boardStones[i] = [];
+        }
+      }
+    }
+
+
+    /*
+      CPU側に残っている石
+      → CPUゴール13
+    */
+
+    if (!cpuEmpty) {
+
+      for (let i = 7; i <= 12; i++) {
+
+        if (boardStones[i].length > 0) {
+
+          boardStones[13].push(
+            ...boardStones[i]
+          );
+
+          boardStones[i] = [];
+        }
+      }
+    }
+
+
+    render();
+
+    await sleep(400);
+  }
+
+
+  /*
+    カハラ用checkWinner
+
+    ①どちらかの陣地が空か確認
+    ②残った側の石をゴールへ移す
+    ③ゴール数を比較
+    ④WIN / LOSE / DRAW
+  */
+
+  async function checkWinner() {
+
+    /*
+      まず現在の陣地を確認
+    */
+
+    const humanEmpty =
+      isSideEmpty('human');
+
+    const cpuEmpty =
+      isSideEmpty('cpu');
+
+
+    if (
+      !humanEmpty &&
+      !cpuEmpty
+    ) {
+      return false;
+    }
+
+
+    busy = true;
+
+
+    /*
+      残り石をゴールへ合算
+    */
+
+    await collectRemainingStones();
+
+
+    const humanScore =
+      boardStones[6].length;
+
+    const cpuScore =
+      boardStones[13].length;
+
+
+    let result;
+
+    if (humanScore > cpuScore) {
+
+      result = 'WIN';
+
+    } else if (humanScore < cpuScore) {
+
+      result = 'LOSE';
+
+    } else {
+
+      result = 'DRAW';
+    }
+
+
+    resultText.textContent = result;
+
+    resultOverlay.classList.remove(
+      'hidden'
+    );
+
+    return true;
   }
 
 
@@ -903,17 +1034,27 @@
 
 
     const again =
-      await makeMove(
+      await makeKahalaMove(
         index,
         'human',
         true
       );
 
 
-    if (checkWinner()) {
+    /*
+      ここでゲーム終了判定
+    */
+
+    if (
+      await checkWinner()
+    ) {
       return;
     }
 
+
+    /*
+      ゴールに入ったら追加ターン
+    */
 
     if (again) {
 
@@ -926,6 +1067,10 @@
       busy = false;
 
     } else {
+
+      /*
+        CPUへ
+      */
 
       current = 'cpu';
 
@@ -945,7 +1090,7 @@
   async function cpuTurn() {
 
     if (
-      checkWinner() ||
+      await checkWinner() ||
       isPaused
     ) {
       return;
@@ -954,8 +1099,7 @@
 
     busy = true;
 
-    thinking.style.display =
-      'block';
+    thinking.style.display = 'block';
 
     await sleep(450);
 
@@ -973,18 +1117,19 @@
 
 
     const again =
-      await makeMove(
+      await makeKahalaMove(
         move,
         'cpu',
         true
       );
 
 
-    thinking.style.display =
-      'none';
+    thinking.style.display = 'none';
 
 
-    if (checkWinner()) {
+    if (
+      await checkWinner()
+    ) {
       return;
     }
 
@@ -1013,713 +1158,433 @@
 
 
   /* =========================================================
-     SIMULATION
+     AI EVALUATION
      ========================================================= */
-
-  function simulateBasic(
-    state,
-    start,
-    player
-  ) {
-
-    const s =
-      state.slice();
-
-    let stones =
-      s[start];
-
-    s[start] = 0;
-
-    let pos = start;
-
-
-    while (stones > 0) {
-
-      pos =
-        nextIndexBasic(pos);
-
-      s[pos]++;
-
-      stones--;
-    }
-
-
-    return {
-      state: s,
-      last: pos,
-      again:
-        pos === ownGoal(player)
-    };
-  }
-
 
   /*
-    Kahala用シミュレーション
-
-    実際の盤面と同じく、
-
-    ・相手ゴールを飛ばす
-    ・ゴールには入れる
-    ・空ポケット取り込み
-    ・追加ターン
-
-    を全部再現する。
+    CPUが多くゴールに入れているほど高評価。
+    最終的な勝敗と同じ方向を向く。
   */
 
-  function simulateKahala(
-    state,
-    start,
-    player
-  ) {
+  function evaluateKahala(state) {
 
-    const s =
-      state.slice();
+    const humanGoal =
+      state[6];
 
-    let stones =
-      s[start];
-
-    s[start] = 0;
-
-    let pos = start;
+    const cpuGoal =
+      state[13];
 
 
-    while (stones > 0) {
+    /*
+      ゴール差を最重要視
+    */
 
-      pos =
-        nextIndexKahala(
-          pos,
-          player
-        );
-
-
-      const wasEmpty =
-        s[pos] === 0;
+    let score =
+      (cpuGoal - humanGoal) * 100;
 
 
-      s[pos]++;
+    /*
+      まだ盤上にある石についても評価。
 
-      stones--;
+      CPU側に多く残っている
+      → CPUが将来的に得点できるのでプラス
 
+      YOU側に多く残っている
+      → YOUが将来的に得点できるのでマイナス
+    */
 
-      /*
-        最後の石が
-        自分の陣地の空ポケットなら
-        取り込み。
-      */
-
-      if (
-        stones === 0 &&
-        isPlayerPit(pos, player) &&
-        wasEmpty
-      ) {
-
-        const opposite =
-          oppositePit(pos);
-
-        const captured =
-          s[opposite];
-
-
-        /*
-          今置いた1個
-        */
-
-        s[pos] = 0;
-
-        /*
-          対面の石も取る
-        */
-
-        s[opposite] = 0;
-
-
-        /*
-          ゴールへまとめて移動
-        */
-
-        s[
-          ownGoal(player)
-        ] +=
-          1 + captured;
-      }
-    }
-
-
-    return {
-      state: s,
-      last: pos,
-      again:
-        pos === ownGoal(player)
-    };
-  }
-
-
-  function simulate(
-    state,
-    start,
-    player
-  ) {
-
-    if (isKahala()) {
-
-      return simulateKahala(
-        state,
-        start,
-        player
-      );
-
-    } else {
-
-      return simulateBasic(
-        state,
-        start,
-        player
-      );
-    }
-  }
-
-
-  /* =========================================================
-     KAHALA END-OF-GAME SWEEP
-     ========================================================= */
-
-  function sweepRemainingStones(
-    state
-  ) {
-
-    const humanEmpty =
+    const humanPits =
       state
         .slice(0, 6)
-        .every(v => v === 0);
+        .reduce((a, b) => a + b, 0);
 
-    const cpuEmpty =
+    const cpuPits =
       state
         .slice(7, 13)
-        .every(v => v === 0);
+        .reduce((a, b) => a + b, 0);
+
+
+    score +=
+      (cpuPits - humanPits) * 4;
 
 
     /*
-      YOU側が空になった場合、
-      CPU側に残っている石を
-      CPUゴールへ。
+      よこどり可能性を評価
     */
 
-    if (humanEmpty && !cpuEmpty) {
+    for (let i = 7; i <= 12; i++) {
 
-      for (let i = 7; i <= 12; i++) {
+      if (state[i] === 0) {
 
-        state[13] += state[i];
-        state[i] = 0;
+        const opposite =
+          oppositePit(i);
+
+        if (
+          opposite !== undefined &&
+          state[opposite] > 0
+        ) {
+
+          score +=
+            state[opposite] * 5;
+        }
       }
     }
 
 
-    /*
-      CPU側が空になった場合、
-      YOU側に残っている石を
-      YOUゴールへ。
-    */
-
-    if (cpuEmpty && !humanEmpty) {
-
-      for (let i = 0; i <= 5; i++) {
-
-        state[6] += state[i];
-        state[i] = 0;
-      }
-    }
-
-
-    return state;
+    return score;
   }
 
 
   /* =========================================================
-     EVALUATION
+     AI SIMULATION
      ========================================================= */
 
-  function evaluateBasic(s) {
+  function simulateFullKahala(
+    state,
+    start,
+    player
+  ) {
 
-    const humanPits =
-      s.slice(0, 6)
-        .reduce((a, b) => a + b, 0);
-
-    const cpuPits =
-      s.slice(7, 13)
-        .reduce((a, b) => a + b, 0);
-
-    return (
-      (humanPits - cpuPits) * 10
-    );
-  }
+    const result =
+      simulateKahala(
+        state,
+        start,
+        player
+      );
 
 
-  /*
-    Kahalaでは最終的に
-    ゴールの石数が勝敗。
-
-    したがってCPUから見て
-
-    CPUゴール - YOUゴール
-
-    を高く評価する。
-  */
-
-  function evaluateKahala(s) {
-
-    const humanGoal = s[6];
-    const cpuGoal = s[13];
-
-    const humanPits =
-      s.slice(0, 6)
-        .reduce((a, b) => a + b, 0);
-
-    const cpuPits =
-      s.slice(7, 13)
-        .reduce((a, b) => a + b, 0);
-
-
-    return (
-      (cpuGoal - humanGoal) * 30
-      +
-      (cpuPits - humanPits) * 5
-    );
-  }
-
-
-  function evaluate(s) {
-
-    if (isKahala()) {
-      return evaluateKahala(s);
-    }
-
-    return evaluateBasic(s);
-  }
-
-
-  /* =========================================================
-     ADVANCED EVALUATION
-     ========================================================= */
-
-  function evaluateAdvanced(s) {
-
-    if (isKahala()) {
-
-      const humanGoal = s[6];
-      const cpuGoal = s[13];
-
-      const humanPits =
-        s.slice(0, 6)
-          .reduce((a, b) => a + b, 0);
-
-      const cpuPits =
-        s.slice(7, 13)
-          .reduce((a, b) => a + b, 0);
-
-
-      let score =
-        (cpuGoal - humanGoal) * 40;
-
-      score +=
-        (cpuPits - humanPits) * 8;
-
-
-      /*
-        CPU側の空ポケット。
-        終盤に自分の陣地を空にできることは
-        有利なので少し評価する。
-      */
-
-      for (let i = 7; i <= 12; i++) {
-
-        if (s[i] === 0) {
-          score += 4;
-        }
-      }
-
-
-      /*
-        YOU側が空に近いほど、
-        CPUがゲームを終わらせられる可能性が高い。
-      */
-
-      const humanEmpty =
-        s.slice(0, 6)
-          .filter(v => v === 0)
-          .length;
-
-      score +=
-        humanEmpty * 5;
-
-
-      return score;
-    }
+    const s =
+      result.state;
 
 
     /*
-      BASIC
+      シミュレーションでも
+      陣地が空になった場合は
+      最終合算まで行う。
     */
 
-    const humanPits =
-      s.slice(0, 6)
-        .reduce((a, b) => a + b, 0);
+    const humanEmpty =
+      isSideEmpty(
+        'human',
+        s
+      );
 
-    const cpuPits =
-      s.slice(7, 13)
-        .reduce((a, b) => a + b, 0);
-
-    const humanGoal = s[6];
-    const cpuGoal = s[13];
-
-
-    const goalScore =
-      (cpuGoal - humanGoal) * 12;
-
-    const pitScore =
-      (humanPits - cpuPits) * 8;
+    const cpuEmpty =
+      isSideEmpty(
+        'cpu',
+        s
+      );
 
 
-    let emptyBonus = 0;
+    if (
+      humanEmpty ||
+      cpuEmpty
+    ) {
+
+      if (!humanEmpty) {
+
+        for (let i = 0; i <= 5; i++) {
+
+          s[6] += s[i];
+          s[i] = 0;
+        }
+      }
 
 
-    for (let i = 7; i < 13; i++) {
+      if (!cpuEmpty) {
 
-      if (s[i] === 0) {
-        emptyBonus += 3;
+        for (let i = 7; i <= 12; i++) {
+
+          s[13] += s[i];
+          s[i] = 0;
+        }
       }
     }
 
 
-    for (let i = 0; i < 6; i++) {
-
-      if (s[i] === 0) {
-        emptyBonus -= 3;
-      }
-    }
-
-
-    return (
-      goalScore +
-      pitScore +
-      emptyBonus
-    );
+    return {
+      ...result,
+      state: s
+    };
   }
 
 
   /* =========================================================
-     LEVEL 1〜4 CPU
+     AI LEVEL 1
      ========================================================= */
 
-  function chooseCpuMove() {
+  function chooseRandomMove(moves) {
 
-    const moves =
-      legalMoves('cpu');
+    return moves[
+      Math.floor(
+        Math.random() * moves.length
+      )
+    ];
+  }
 
 
-    if (!moves.length) {
-      return 7;
-    }
+  /* =========================================================
+     AI LEVEL 2
+     ========================================================= */
 
+  function chooseLevel2(moves) {
 
-    /* =====================================================
-       LEVEL 1
-       完全ランダム
-       ===================================================== */
-
-    if (cpuLevel === 1) {
-
-      return moves[
-        Math.floor(
-          Math.random() * moves.length
-        )
-      ];
-    }
-
-
-    /* =====================================================
-       LEVEL 2
-       その場で一番得な手
-       ===================================================== */
-
-    if (cpuLevel === 2) {
-
-      let best =
-        -Infinity;
-
-      let candidates = [];
-
-
-      for (const m of moves) {
-
-        const r =
-          simulate(
-            board,
-            m,
-            'cpu'
-          );
-
-
-        let score =
-          evaluate(r.state);
-
-
-        /*
-          ゴールに入る手を優先
-        */
-
-        if (r.again) {
-          score +=
-            isKahala()
-              ? 80
-              : 15;
-        }
-
-
-        /*
-          Kahalaの取り込みも評価
-        */
-
-        if (isKahala()) {
-
-          const goalGain =
-            r.state[13] - board[13];
-
-          score +=
-            goalGain * 20;
-        }
-
-
-        if (score > best) {
-
-          best = score;
-          candidates = [m];
-
-        } else if (score === best) {
-
-          candidates.push(m);
-        }
-      }
-
-
-      return candidates[
-        Math.floor(
-          Math.random()
-          * candidates.length
-        )
-      ];
-    }
-
-
-    /* =====================================================
-       LEVEL 3
-       自分の手 → 相手の1手先
-       ===================================================== */
-
-    if (cpuLevel === 3) {
-
-      let best =
-        -Infinity;
-
-      let candidates = [];
-
-
-      for (const m of moves) {
-
-        const r =
-          simulate(
-            board,
-            m,
-            'cpu'
-          );
-
-
-        let score =
-          evaluate(r.state);
-
-
-        if (r.again) {
-
-          score +=
-            isKahala()
-              ? 80
-              : 20;
-        }
-
-
-        const oppMoves =
-          legalMoves(
-            'human',
-            r.state
-          );
-
-
-        if (oppMoves.length) {
-
-          let worst =
-            Infinity;
-
-
-          for (const om of oppMoves) {
-
-            const or =
-              simulate(
-                r.state,
-                om,
-                'human'
-              );
-
-
-            let after =
-              evaluate(or.state);
-
-
-            if (or.again) {
-
-              const follow =
-                legalMoves(
-                  'human',
-                  or.state
-                );
-
-
-              if (follow.length) {
-
-                const followScores =
-                  follow.map(
-                    f =>
-                      evaluate(
-                        simulate(
-                          or.state,
-                          f,
-                          'human'
-                        ).state
-                      )
-                  );
-
-
-                after +=
-                  Math.min(
-                    ...followScores
-                  ) * 0.25;
-              }
-            }
-
-
-            worst =
-              Math.min(
-                worst,
-                after
-              );
-          }
-
-
-          score +=
-            worst * 0.7;
-        }
-
-
-        if (score > best) {
-
-          best = score;
-          candidates = [m];
-
-        } else if (score === best) {
-
-          candidates.push(m);
-        }
-      }
-
-
-      return candidates[
-        Math.floor(
-          Math.random()
-          * candidates.length
-        )
-      ];
-    }
-
-
-    /* =====================================================
-       LEVEL 4
-       MINIMAX
-       ===================================================== */
-
-    const SEARCH_DEPTH =
-      isKahala()
-        ? 5
-        : 4;
-
-
-    let bestScore =
-      -Infinity;
-
+    let best = -Infinity;
     let candidates = [];
 
 
-    for (const m of moves) {
+    for (const move of moves) {
 
       const result =
-        simulate(
+        simulateFullKahala(
           board,
-          m,
+          move,
           'cpu'
         );
 
 
-      let score;
+      let score =
+        evaluateKahala(
+          result.state
+        );
 
+
+      /*
+        追加ターンを強く評価
+      */
 
       if (result.again) {
-
-        score =
-          minimax(
-            result.state,
-            SEARCH_DEPTH - 1,
-            'cpu',
-            -Infinity,
-            Infinity
-          );
-
-      } else {
-
-        score =
-          minimax(
-            result.state,
-            SEARCH_DEPTH - 1,
-            'human',
-            -Infinity,
-            Infinity
-          );
+        score += 30;
       }
 
 
-      if (result.again) {
+      /*
+        よこどりを評価
+      */
+
+      if (result.captured > 0) {
 
         score +=
-          isKahala()
-            ? 100
-            : 25;
+          result.captured * 15;
+      }
+
+
+      if (score > best) {
+
+        best = score;
+        candidates = [move];
+
+      } else if (score === best) {
+
+        candidates.push(move);
+      }
+    }
+
+
+    return chooseRandomMove(
+      candidates
+    );
+  }
+
+
+  /* =========================================================
+     AI LEVEL 3
+     ========================================================= */
+
+  function chooseLevel3(moves) {
+
+    let best = -Infinity;
+    let candidates = [];
+
+
+    for (const move of moves) {
+
+      const result =
+        simulateFullKahala(
+          board,
+          move,
+          'cpu'
+        );
+
+
+      let score =
+        evaluateKahala(
+          result.state
+        );
+
+
+      if (result.again) {
+        score += 30;
+      }
+
+
+      if (result.captured > 0) {
+
+        score +=
+          result.captured * 15;
+      }
+
+
+      /*
+        相手の最善手を考える
+      */
+
+      const humanMoves =
+        legalMoves(
+          'human',
+          result.state
+        );
+
+
+      if (humanMoves.length > 0) {
+
+        let worst =
+          Infinity;
+
+
+        for (
+          const humanMove
+          of humanMoves
+        ) {
+
+          const humanResult =
+            simulateFullKahala(
+              result.state,
+              humanMove,
+              'human'
+            );
+
+
+          let humanScore =
+            evaluateKahala(
+              humanResult.state
+            );
+
+
+          /*
+            人間側に追加ターンがあるなら
+            CPUにとって危険
+          */
+
+          if (humanResult.again) {
+            humanScore -= 30;
+          }
+
+
+          if (
+            humanResult.captured > 0
+          ) {
+
+            humanScore -=
+              humanResult.captured * 15;
+          }
+
+
+          worst =
+            Math.min(
+              worst,
+              humanScore
+            );
+        }
+
+
+        score +=
+          worst * 0.8;
+      }
+
+
+      if (score > best) {
+
+        best = score;
+        candidates = [move];
+
+      } else if (score === best) {
+
+        candidates.push(move);
+      }
+    }
+
+
+    return chooseRandomMove(
+      candidates
+    );
+  }
+
+
+  /* =========================================================
+     AI LEVEL 4
+     ========================================================= */
+
+  const SEARCH_DEPTH = 5;
+
+
+  function chooseLevel4(moves) {
+
+    let bestScore = -Infinity;
+    let candidates = [];
+
+
+    for (const move of moves) {
+
+      const result =
+        simulateFullKahala(
+          board,
+          move,
+          'cpu'
+        );
+
+
+      let nextPlayer =
+        result.again
+          ? 'cpu'
+          : 'human';
+
+
+      let score =
+        minimaxKahala(
+          result.state,
+          SEARCH_DEPTH - 1,
+          nextPlayer,
+          -Infinity,
+          Infinity
+        );
+
+
+      /*
+        追加ターン
+      */
+
+      if (result.again) {
+        score += 35;
+      }
+
+
+      /*
+        よこどり
+      */
+
+      if (result.captured > 0) {
+
+        score +=
+          result.captured * 20;
       }
 
 
       if (score > bestScore) {
 
         bestScore = score;
-        candidates = [m];
+        candidates = [move];
 
       } else if (score === bestScore) {
 
-        candidates.push(m);
+        candidates.push(move);
       }
     }
 
 
-    return candidates[
-      Math.floor(
-        Math.random()
-        * candidates.length
-      )
-    ];
+    return chooseRandomMove(
+      candidates
+    );
   }
 
 
@@ -1727,7 +1592,7 @@
      MINIMAX
      ========================================================= */
 
-  function minimax(
+  function minimaxKahala(
     state,
     depth,
     player,
@@ -1736,51 +1601,79 @@
   ) {
 
     /*
-      Kahalaではゲーム終了時に
-      残った石をゴールへ移してから
-      勝敗を決める。
+      ゲーム終了
     */
 
     const humanEmpty =
-      state
-        .slice(0, 6)
-        .every(v => v === 0);
+      isSideEmpty(
+        'human',
+        state
+      );
 
     const cpuEmpty =
-      state
-        .slice(7, 13)
-        .every(v => v === 0);
+      isSideEmpty(
+        'cpu',
+        state
+      );
 
 
-    if (humanEmpty || cpuEmpty) {
+    if (
+      humanEmpty ||
+      cpuEmpty
+    ) {
 
-      const finished =
-        isKahala()
-          ? sweepRemainingStones(
-              state.slice()
-            )
-          : state;
+      const finalState =
+        state.slice();
 
 
-      if (isKahala()) {
+      if (!humanEmpty) {
 
-        return (
-          finished[13]
-          -
-          finished[6]
-        ) * 1000;
+        for (let i = 0; i <= 5; i++) {
+
+          finalState[6] +=
+            finalState[i];
+
+          finalState[i] = 0;
+        }
       }
 
 
-      return (
-        evaluate(finished) * 100
-      );
+      if (!cpuEmpty) {
+
+        for (let i = 7; i <= 12; i++) {
+
+          finalState[13] +=
+            finalState[i];
+
+          finalState[i] = 0;
+        }
+      }
+
+
+      /*
+        最終勝敗を非常に大きく評価
+      */
+
+      const diff =
+        finalState[13] -
+        finalState[6];
+
+
+      if (diff > 0) {
+        return 100000 + diff * 100;
+      }
+
+      if (diff < 0) {
+        return -100000 + diff * 100;
+      }
+
+      return 0;
     }
 
 
     if (depth <= 0) {
 
-      return evaluateAdvanced(
+      return evaluateKahala(
         state
       );
     }
@@ -1795,40 +1688,30 @@
 
     if (!moves.length) {
 
-      return evaluateAdvanced(
+      return evaluateKahala(
         state
       );
     }
 
 
-    /* =====================================================
-       CPU = MAX
-       ===================================================== */
+    //CPU = 最大化
 
     if (player === 'cpu') {
-
-      let value =
-        -Infinity;
-
-
+      let value = -Infinity;
       for (const move of moves) {
-
         const result =
-          simulate(
+          simulateFullKahala(
             state,
             move,
             'cpu'
           );
-
-
         const nextPlayer =
           result.again
             ? 'cpu'
             : 'human';
 
-
         let score =
-          minimax(
+          minimaxKahala(
             result.state,
             depth - 1,
             nextPlayer,
@@ -1836,52 +1719,42 @@
             beta
           );
 
-
         if (result.again) {
-
-          score +=
-            isKahala()
-              ? 80
-              : 18;
+          score += 25;
         }
 
+        if (result.captured > 0) {
 
+          score +=
+            result.captured * 15;
+        }
         value =
           Math.max(
             value,
             score
           );
 
-
         alpha =
           Math.max(
             alpha,
             value
           );
-
-
         if (beta <= alpha) {
           break;
         }
       }
-
-
       return value;
     }
 
+    /*
+      HUMAN = 最小化
+    */
 
-    /* =====================================================
-       HUMAN = MIN
-       ===================================================== */
-
-    let value =
-      Infinity;
-
+    let value = Infinity;
 
     for (const move of moves) {
-
       const result =
-        simulate(
+        simulateFullKahala(
           state,
           move,
           'human'
@@ -1893,9 +1766,8 @@
           ? 'human'
           : 'cpu';
 
-
       let score =
-        minimax(
+        minimaxKahala(
           result.state,
           depth - 1,
           nextPlayer,
@@ -1903,13 +1775,15 @@
           beta
         );
 
-
       if (result.again) {
+        score -= 25;
+      }
+
+
+      if (result.captured > 0) {
 
         score -=
-          isKahala()
-            ? 80
-            : 18;
+          result.captured * 15;
       }
 
 
@@ -1938,321 +1812,41 @@
 
 
   /* =========================================================
-     WINNER
+     CPU MOVE SELECTOR
      ========================================================= */
 
-  function checkWinner() {
+  function chooseCpuMove() {
 
-    const humanEmpty =
-      board
-        .slice(0, 6)
-        .every(v => v === 0);
-
-    const cpuEmpty =
-      board
-        .slice(7, 13)
-        .every(v => v === 0);
+    const moves =
+      legalMoves('cpu');
 
 
-    if (
-      !humanEmpty &&
-      !cpuEmpty
-    ) {
-      return false;
+    if (!moves.length) {
+      return 7;
     }
 
 
-    busy = true;
-
-
-    /*
-      Kahalaの場合は、
-      終了時に残った石をゴールへ
-      移してから勝敗判定。
-    */
-
-    if (isKahala()) {
-
-      sweepRemainingStones(
-        boardStones.map(
-          stones => stones.length
-        )
-      );
-
-
-      /*
-        実際のboardStonesにも反映
-        */
-
-      if (humanEmpty && !cpuEmpty) {
-
-        for (let i = 7; i <= 12; i++) {
-
-          boardStones[13].push(
-            ...boardStones[i]
-          );
-
-          boardStones[i] = [];
-        }
-
-      } else if (cpuEmpty && !humanEmpty) {
-
-        for (let i = 0; i <= 5; i++) {
-
-          boardStones[6].push(
-            ...boardStones[i]
-          );
-
-          boardStones[i] = [];
-        }
-      }
-
-
-      render();
-
-
-      const humanScore =
-        boardStones[6].length;
-
-      const cpuScore =
-        boardStones[13].length;
-
-
-      let result;
-
-      if (humanScore > cpuScore) {
-
-        result = 'WIN';
-
-      } else if (humanScore < cpuScore) {
-
-        result = 'LOSE';
-
-      } else {
-
-        result = 'DRAW';
-      }
-
-
-      resultText.textContent =
-        result;
-
-      resultOverlay.classList.remove(
-        'hidden'
-      );
-
-      return true;
+    if (cpuLevel === 1) {
+      return chooseRandomMove(moves);
     }
 
 
-    /*
-      BASIC
-    */
-
-    const result =
-      humanEmpty && !cpuEmpty
-        ? 'WIN'
-        : (
-            cpuEmpty && !humanEmpty
-              ? 'LOSE'
-              : 'DRAW'
-          );
+    if (cpuLevel === 2) {
+      return chooseLevel2(moves);
+    }
 
 
-    resultText.textContent =
-      result;
-
-    resultOverlay.classList.remove(
-      'hidden'
-    );
+    if (cpuLevel === 3) {
+      return chooseLevel3(moves);
+    }
 
 
-    return true;
+    return chooseLevel4(moves);
   }
 
 
   /* =========================================================
-     TITLE
-     ========================================================= */
-
-  function showTitle() {
-
-    resultOverlay.classList.add(
-      'hidden'
-    );
-
-    pauseOverlay.classList.add(
-      'hidden'
-    );
-
-    settingsScreen.classList.add(
-      'hidden'
-    );
-
-    titleScreen.classList.remove(
-      'hidden'
-    );
-
-    gameUI.classList.add(
-      'hidden'
-    );
-
-    boardWrap.style.opacity =
-      '0.52';
-
-    resetBoard();
-  }
-
-
-  /* =========================================================
-     BUTTONS
-     ========================================================= */
-
-  document
-    .getElementById('toSettings')
-    .addEventListener(
-      'click',
-      () => {
-
-        settingsError.textContent =
-          '';
-
-        settingsScreen.classList.remove(
-          'hidden'
-        );
-
-        titleScreen.classList.add(
-          'hidden'
-        );
-      }
-    );
-
-
-  document
-    .getElementById('startGame')
-    .addEventListener(
-      'click',
-      () => {
-
-        if (
-          !levelEl.value ||
-          !ruleEl.value
-        ) {
-
-          settingsError.textContent =
-            'Please make a selection';
-
-          return;
-        }
-
-
-        cpuLevel =
-          Number(levelEl.value);
-
-        selectedRule =
-          ruleEl.value;
-
-
-        settingsError.textContent =
-          '';
-
-
-        settingsScreen.classList.add(
-          'hidden'
-        );
-
-        gameUI.classList.remove(
-          'hidden'
-        );
-
-        boardWrap.style.opacity =
-          '1';
-
-
-        resetBoard();
-      }
-    );
-
-
-  /* =========================================================
-     PAUSE
-     ========================================================= */
-
-  document
-    .getElementById('pauseBtn')
-    .addEventListener(
-      'click',
-      () => {
-
-        isPaused = true;
-
-        pauseOverlay.classList.remove(
-          'hidden'
-        );
-      }
-    );
-
-
-  document
-    .getElementById('resumeBtn')
-    .addEventListener(
-      'click',
-      () => {
-
-        isPaused = false;
-
-        pauseOverlay.classList.add(
-          'hidden'
-        );
-
-
-        if (
-          current === 'cpu' &&
-          !busy
-        ) {
-
-          cpuTurn();
-        }
-      }
-    );
-
-
-  document
-    .getElementById('quitBtn')
-    .addEventListener(
-      'click',
-      showTitle
-    );
-
-
-  document
-    .getElementById('restart')
-    .addEventListener(
-      'click',
-      () => {
-
-        resultOverlay.classList.add(
-          'hidden'
-        );
-
-        boardWrap.style.opacity =
-          '1';
-
-        resetBoard();
-      }
-    );
-
-
-  document
-    .getElementById('backTitle')
-    .addEventListener(
-      'click',
-      showTitle
-    );
-
-
-  /* =========================================================
-     SOUND TOGGLE
+     SETTINGS / MENU
      ========================================================= */
 
   soundToggle.addEventListener(
@@ -2275,15 +1869,133 @@
   );
 
 
+  document
+    .getElementById('toSettings')
+    .addEventListener(
+      'click',
+      () => {
+
+        settingsError.textContent = '';
+
+        settingsScreen
+          .classList.remove('hidden');
+
+        titleScreen
+          .classList.add('hidden');
+      }
+    );
+
+
+  document
+    .getElementById('startGame')
+    .addEventListener(
+      'click',
+      () => {
+        if (
+          !levelEl.value ||
+          !ruleEl.value
+        ) {
+          settingsError.textContent =
+            'Please make a selection';
+          return;
+        }
+
+        cpuLevel =
+          Number(levelEl.value);
+
+        settingsError.textContent =
+          '';
+        settingsScreen
+          .classList.add('hidden');
+        gameUI
+          .classList.remove('hidden');
+        boardWrap.style.opacity = '1';
+        resetBoard();
+      }
+    );
+
+  /* =========================================================
+     PAUSE
+     ========================================================= */
+
+  document
+    .getElementById('pauseBtn')
+    .addEventListener(
+      'click',
+      () => {
+        isPaused = true;
+        pauseOverlay
+          .classList.remove('hidden');
+      }
+    );
+
+  document
+    .getElementById('resumeBtn')
+    .addEventListener(
+      'click',
+      () => {
+        isPaused = false;
+        pauseOverlay
+          .classList.add('hidden');
+        if (
+          current === 'cpu' &&　!busy
+        ) {
+          cpuTurn();
+        }
+      }
+    );
+
+
+  document
+    .getElementById('quitBtn')
+    .addEventListener(
+      'click',
+      showTitle
+    );
+
+  /* =========================================================
+     RESULT
+     ========================================================= */
+
+  document
+    .getElementById('restart')
+    .addEventListener(
+      'click',
+      () => {
+        resultOverlay
+          .classList.add('hidden');
+        boardWrap.style.opacity = '1';
+        resetBoard();
+      }
+    );
+
+  document
+    .getElementById('backTitle')
+    .addEventListener(
+      'click',
+      showTitle
+    );
+
+  function showTitle() {
+    resultOverlay
+      .classList.add('hidden');
+    pauseOverlay
+      .classList.add('hidden');
+    settingsScreen
+      .classList.add('hidden');
+    titleScreen
+      .classList.remove('hidden');
+    gameUI
+      .classList.add('hidden');
+    boardWrap.style.opacity = '0.52';
+    resetBoard();
+  }
+
+
   /* =========================================================
      INITIALIZE
      ========================================================= */
-
   createPits();
-
   resetBoard();
-
-  boardWrap.style.opacity =
-    '0.52';
-
+  boardWrap.style.opacity = '0.52';
 })();
