@@ -13,7 +13,7 @@
   let audioCtx = null;
   let soundBuffer = null;
 
-  const SOUND_URL = 'sound/stone.wav';
+  const SOUND_URL = 'stone.wav';
 
   const SOUND_CLIPS = [
     { start: 2.00,  duration: 0.35 },
