@@ -123,22 +123,14 @@
 
   let boardStones =
     Array(14).fill(null).map(() => []);
-
   let board = Array(14).fill(0);
-
   let current = 'human';
-
   let cpuLevel = 1;
-
   let busy = false;
-
   let isPaused = false;
+  //Kahala
+ 
 
-  /*
-    今回はカハラを使用。
-    HTML側のRule selectで value="kahala" を選択した場合も
-    明示的にカハラとして扱う。
-  */
   function isKahalah() {
     return ruleEl.value === 'kahala';
   }
