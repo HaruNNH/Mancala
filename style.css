@@ -1,0 +1,396 @@
+:root{
+    --bg:#e9dfcf;
+    --wood:#9a6b43;
+    --wood-dark:#70472b;
+    --wood-light:#bd9163;
+    --ink:#3e3025;
+    --panel:rgba(255,255,255,.92);
+    --shadow:0 18px 50px rgba(70,45,25,.22);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; display:grid; place-items:center;
+    font-family:ui-rounded,"Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+    color:var(--ink); background:
+      radial-gradient(circle at 20% 15%, rgba(255,255,255,.55), transparent 28%),
+      radial-gradient(circle at 80% 85%, rgba(110,70,35,.12), transparent 30%),
+      var(--bg);
+    overflow:hidden;
+  }
+  button,select{font:inherit}
+  .app{width:min(1280px,98vw); height:min(840px,96vh); position:relative; display:grid; place-items:center}
+  .board-wrap{position:absolute; inset:0; display:grid; place-items:center; transition:opacity .25s}
+  
+  /* --- PC版（横長）ボード --- */
+  .board{
+    position:relative; width:min(1060px,88vw); aspect-ratio:2.6/1; border-radius:64px;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(180,150,115,0.2) 100%),
+      repeating-linear-gradient(87deg, 
+        rgba(160, 125, 85, 0.05) 0px, 
+        rgba(160, 125, 85, 0.05) 2px, 
+        transparent 2px, 
+        transparent 7px
+      ),
+      repeating-radial-gradient(ellipse at 25% 15%, 
+        #f5e6d0 0px, 
+        #e8d3b5 18px, 
+        #ded0b8 28px, 
+        #cbb08c 42px,
+        #e8d3b5 58px
+      );
+    box-shadow:
+      inset 0 4px 8px rgba(255,255,255,0.7), 
+      inset 0 -8px 12px rgba(130,100,70,0.3), 
+      var(--shadow);
+    padding:42px 96px;
+  }
+  .board::before{content:""; position:absolute; inset:12px; border-radius:52px; border:2px solid rgba(255,255,255,.14); pointer-events:none}
+  
+  .pits{position:absolute; left:104px; right:104px; top:50%; transform:translateY(-50%);
+    display:grid; grid-template-columns:repeat(6,1fr); gap:18px; height:78%;
+  }
+
+  .pit{
+    position:relative; display:grid; place-items:center; border-radius:50%;
+    background:
+      radial-gradient(circle at 50% 50%, #9e7f5d 0%, #bd9f7b 70%, #8c6d4d 100%);
+    box-shadow:
+      inset 0 8px 14px rgba(60, 40, 20, 0.5), 
+      inset 0 -3px 5px rgba(255, 255, 255, 0.4),
+      0 1px 3px rgba(255, 255, 255, 0.6);
+    min-width:0; cursor:pointer;
+  }
+
+  .stone{
+    width:20px; height:20px; border-radius:50%;
+    position:absolute; pointer-events:none;
+    box-shadow:
+      inset -2px -2px 4px rgba(0,0,0,0.25),
+      inset 2px 3px 3px rgba(255,255,255,0.95),
+      0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+
+  .stone::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    width: 5px;
+    height: 3px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .stone.c-red { background: radial-gradient(circle at 35% 30%, rgba(255,100,100,0.45), rgba(220,0,0,0.15)); border: 1.5px solid rgba(255, 80, 80, 0.85); }
+  .stone.c-orange { background: radial-gradient(circle at 35% 30%, rgba(255,180,80,0.45), rgba(240,100,0,0.15)); border: 1.5px solid rgba(255, 140, 30, 0.85); }
+  .stone.c-yellow { background: radial-gradient(circle at 35% 30%, rgba(255,255,120,0.5), rgba(220,200,0,0.15)); border: 1.5px solid rgba(240, 210, 40, 0.9); }
+  .stone.c-green { background: radial-gradient(circle at 35% 30%, rgba(100,255,130,0.45), rgba(0,180,50,0.15)); border: 1.5px solid rgba(50, 220, 90, 0.85); }
+  .stone.c-cyan { background: radial-gradient(circle at 35% 30%, rgba(100,255,255,0.45), rgba(0,180,220,0.15)); border: 1.5px solid rgba(40, 220, 240, 0.85); }
+  .stone.c-blue { background: radial-gradient(circle at 35% 30%, rgba(120,170,255,0.45), rgba(10,80,230,0.15)); border: 1.5px solid rgba(80, 140, 255, 0.85); }
+  .stone.c-purple { background: radial-gradient(circle at 35% 30%, rgba(210,120,255,0.45), rgba(130,10,220,0.15)); border: 1.5px solid rgba(190, 80, 255, 0.85); }
+  .stone.c-pink { background: radial-gradient(circle at 35% 30%, rgba(255,120,200,0.45), rgba(230,20,130,0.15)); border: 1.5px solid rgba(255, 90, 180, 0.85); }
+
+  .count{
+    position:absolute; font-weight:700; font-size:16px; line-height:1;
+    padding:3px 7px; border-radius:999px; background:rgba(255,255,255,.82);
+    color:var(--ink); z-index:4; min-width:24px; text-align:center; pointer-events:none;
+  }
+  .pit.bottom .count{top:calc(100% + 12px)}
+  .pit.top .count{bottom:calc(100% + 12px)}
+
+  .goal{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:88px; height:76%; border-radius:44px;
+    background:
+      radial-gradient(circle at 50% 50%, #9e7f5d 0%, #bd9f7b 70%, #8c6d4d 100%);
+    box-shadow:
+      inset 0 10px 16px rgba(60, 40, 20, 0.55), 
+      inset 0 -3px 5px rgba(255, 255, 255, 0.4),
+      0 1px 3px rgba(255, 255, 255, 0.6);
+    display:grid; place-items:center;
+  }
+  .goal.left{left:0}.goal.right{right:0}
+  .goal .count{font-size:18px}
+  .goal.left .count{right:calc(100% + 10px)}
+  .goal.right .count{left:calc(100% + 10px)}
+
+  .label{
+    position:absolute; left:50%; transform:translateX(-50%);
+    display:flex; align-items:center; justify-content:center;
+    padding:6px 20px; font-size:20px; font-weight:700; letter-spacing:.08em;
+    border-radius:20px; background:rgba(255,255,255,.85);
+    box-shadow:0 4px 12px rgba(0,0,0,.1);
+    transition:all .3s ease;
+    opacity:.4; filter:brightness(.8);
+  }
+  .label.opponent{ top:-48px; }
+  .label.you{ bottom:-48px; }
+  .label.active{
+    opacity:1; filter:brightness(1.1); transform:translateX(-50%) scale(1.1);
+    background:#ffffff; color:var(--wood-dark);
+    box-shadow:0 0 20px rgba(14, 7, 7, 0.8), 0 4px 14px rgba(70,45,25,.25);
+  }
+
+  .screen{position:absolute; inset:0; display:grid; place-items:center; z-index:10}
+  .screen.hidden{display:none}
+  .start-btn,.action-btn{
+    border:0; border-radius:16px; padding:16px 30px; cursor:pointer;
+    color:var(--ink); background:rgba(255,255,255,.94); box-shadow:0 8px 24px rgba(70,45,25,.2);
+    font-weight:700; transition:transform .15s,box-shadow .15s;
+  }
+  .start-btn{font-size:21px; min-width:210px}
+  button:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(70,45,25,.24)}
+  
+  .panel{
+    width:min(420px,82vw); padding:34px 38px; border-radius:28px;
+    background:var(--panel); box-shadow:var(--shadow); text-align:center;
+    backdrop-filter:blur(8px);
+  }
+  .panel h1{margin:0 0 26px;font-size:26px}
+  .field{text-align:left;margin:0 0 18px}
+  .field label{display:block;font-weight:700;margin-bottom:8px}
+  select{width:100%; padding:13px 15px; border:1px solid #d7cfc4; border-radius:12px;
+    background:white;color:var(--ink);cursor:pointer}
+  .error{height:22px;color:#b44a3d;font-size:14px;margin:7px 0 8px}
+  
+  .game-ui{position:absolute; inset:0; z-index:15; pointer-events:none}
+  .game-ui.hidden{display:none}
+  .thinking{
+    position:absolute; top:24px; left:50%; transform:translateX(-50%);
+    font-size:16px; font-weight:700; opacity:.8; display:none;
+    background:rgba(255,255,255,.8); padding:6px 16px; border-radius:20px;
+  }
+  .settings-btn{
+    position:absolute; top:24px; right:24px; pointer-events:auto;
+    width:48px; height:48px; border-radius:50%; border:0;
+    background:rgba(255,255,255,.88); color:var(--ink); font-size:22px;
+    display:grid; place-items:center; cursor:pointer;
+    box-shadow:0 4px 16px rgba(70,45,25,.18); backdrop-filter:blur(4px);
+    transition:transform .15s, background .15s;
+  }
+  .settings-btn:hover{ background:#ffffff; transform:scale(1.08); }
+
+  .pause-overlay{
+    position:absolute; inset:0; display:grid; place-items:center;
+    background:rgba(255,255,255,.67); z-index:25; backdrop-filter:blur(3px);
+  }
+  .pause-overlay.hidden{display:none}
+  .pause-panel{
+    width:min(360px,80vw); padding:36px 30px; border-radius:28px;
+    background:var(--panel); box-shadow:var(--shadow); text-align:center;
+  }
+  .pause-panel h2{margin:0 0 20px; font-size:26px}
+
+  .sound-setting {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; margin-bottom: 24px; font-weight: 700;
+  }
+  .sound-title { width: 70px; text-align: right; }
+  .toggle-switch {
+    position: relative; width: 60px; height: 32px; background: #ccc;
+    border-radius: 20px; cursor: pointer; transition: background 0.3s;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); flex-shrink: 0;
+  }
+  .toggle-switch.active { background: #8cba80; }
+  .toggle-circle {
+    position: absolute; top: 3px; left: 3px; width: 26px; height: 26px;
+    background: white; border-radius: 50%; transition: transform 0.3s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  .toggle-switch.active .toggle-circle { transform: translateX(28px); }
+  .sound-status { width: 40px; text-align: center; }
+
+  .pause-menu-actions{display:flex; flex-direction:column; gap:14px; align-items:center}
+  .pause-menu-actions button{width:100%; max-width:240px}
+
+  .result-overlay{
+    position:absolute; inset:0; display:grid; place-items:center; background:rgba(255,255,255,.67);
+    z-index:20; backdrop-filter:blur(2px);
+  }
+  .result-overlay.hidden{display:none}
+  .result-box{text-align:center}
+  .result-box h2{font-size:42px;margin:0 0 28px;letter-spacing:.05em}
+  .result-actions{display:flex;gap:14px;justify-content:center}
+  .result-actions button{min-width:150px}
+
+ /* --- スマホ縦向き（ポートレート）時のレイアウト --- */
+@media (orientation: portrait) {
+.board {
+  width: min(94vw, 360px);
+  aspect-ratio: 1 / 1.7;
+  padding: 56px 14px;
+
+  /* スマホ版だけ全体を少し上へ */
+  transform: translateY(-15px);
+}
+
+
+  .pits {
+    left: 14px;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 8px;
+  }
+
+  /* =========================================
+     ゴール
+     ========================================= */
+
+  .goal {
+    width: 76%;
+    height: 44px;
+    left: 50%;
+  }
+
+  /* 上側 = CPUゴール */
+  .goal.left {
+    top: 6px;
+    bottom: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* 下側 = Youゴール */
+  .goal.right {
+    bottom: 6px;
+    top: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* CPUゴールのカウント → 右側 */
+  .goal.left .count {
+    left: calc(100% + 8px);
+    right: auto;
+  }
+
+  /* Youゴールのカウント → 左側 */
+  .goal.right .count {
+    right: calc(100% + 8px);
+    left: auto;
+  }
+
+
+  /* =========================================
+     You / CPU ラベル
+     ========================================= */
+
+  /*
+    ラベルは盤の一番下へ。
+    You  = 左
+    CPU  = 右
+  */
+
+  /* =========================================
+   You / CPU ラベル
+   スマホでは盤の一番下の左右に配置
+   ========================================= */
+
+.label {
+  top: auto !important;
+  bottom: -38px !important;
+  font-size: 14px;
+  padding: 4px 12px;
+  transform: none !important;
+}
+
+/* You → 盤の左下 */
+.label.you {
+  left: 0 !important;
+  right: auto !important;
+}
+
+/* CPU → 盤の右下 */
+.label.opponent {
+  left: auto !important;
+  right: 0 !important;
+}
+
+/* activeになっても位置は変えない */
+.label.you.active {
+  transform: scale(1.1) !important;
+  transform-origin: left center;
+}
+
+.label.opponent.active {
+  transform: scale(1.1) !important;
+  transform-origin: right center;
+}
+
+  /*
+    active時も左右位置を維持。
+    JS側の
+      human = You
+      cpu   = CPU
+    という判定は変更しない。
+  */
+  .label.you.active {
+    transform: scale(1.1);
+    transform-origin: left center;
+  }
+
+  .label.opponent.active {
+    transform: scale(1.1);
+    transform-origin: right center;
+  }
+
+
+  /* =========================================
+     ピットのカウント
+     ========================================= */
+
+  /*
+    左列 = You側
+    → 数字をピットの左側
+  */
+  .pit:nth-child(odd) .count {
+    top: 50%;
+    bottom: auto;
+    right: calc(100% + 5px);
+    left: auto;
+    transform: translateY(-50%);
+    font-size: 13px;
+    padding: 2px 5px;
+  }
+
+  /*
+    右列 = CPU側
+    → 数字をピットの右側
+  */
+  .pit:nth-child(even) .count {
+    top: 50%;
+    bottom: auto;
+    left: calc(100% + 5px);
+    right: auto;
+    transform: translateY(-50%);
+    font-size: 13px;
+    padding: 2px 5px;
+  }
+
+
+  /* =========================================
+     設定ボタン
+     ========================================= */
+
+  /*
+    現在：右上
+    ↓
+    変更後：左上
+  */
+  .settings-btn {
+    top: 12px;
+    left: 16px;
+    right: auto;
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
+  }
+
+  .thinking {
+    top: 12px;
+  }
+}

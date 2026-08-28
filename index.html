@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mancala</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+
+  <div class="board-wrap" id="boardWrap">
+    <div class="board" id="board">
+      <div class="label opponent" id="opponentLabel">CPU</div>
+      <div class="label you" id="youLabel">You</div>
+
+      <div class="goal left" id="goalLeft"><span class="count" id="leftGoalCount">0</span></div>
+      <div class="goal right" id="goalRight"><span class="count" id="rightGoalCount">0</span></div>
+      <div class="pits" id="pits"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="titleScreen">
+    <button class="start-btn" id="toSettings">PLAY</button>
+  </div>
+
+  <div class="screen hidden" id="settingsScreen">
+    <div class="panel">
+      <h1>Settings</h1>
+      <div class="field">
+        <label for="level">CPU Level</label>
+        <select id="level">
+          <option value="">Select Level</option>
+          <option value="1">Level 1</option>
+          <option value="2">Level 2</option>
+          <option value="3">Level 3</option>
+          <option value="4">Level 4</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="rule">Rules</label>
+        <select id="rule">
+          <option value="">Select Rule</option>
+          <option value="basic">Clear-to-Win</option>
+        </select>
+      </div>
+      <div class="error" id="settingsError"></div>
+      <button class="action-btn" id="startGame">START</button>
+    </div>
+  </div>
+
+  <div class="game-ui hidden" id="gameUI">
+    <div class="thinking" id="thinking">Analyzing…</div>
+    <button class="settings-btn" id="pauseBtn" aria-label="Pause Menu">⚙</button>
+  </div>
+
+  <div class="pause-overlay hidden" id="pauseOverlay">
+    <div class="pause-panel">
+      <h2>PAUSE</h2>
+
+      <div class="sound-setting">
+        <span class="sound-title">SOUND</span>
+        <div class="toggle-switch active" id="soundToggle">
+          <div class="toggle-circle"></div>
+        </div>
+        <span class="sound-status" id="soundStatus">ON</span>
+      </div>
+
+      <div class="pause-menu-actions">
+        <button class="action-btn" id="resumeBtn">RESUME</button>
+        <button class="action-btn" id="quitBtn">BACK MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-overlay hidden" id="resultOverlay">
+    <div class="result-box">
+      <h2 id="resultText">WIN</h2>
+      <div class="result-actions">
+        <button class="action-btn" id="restart">RESTART</button>
+        <button class="action-btn" id="backTitle">MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/game.js"></script>
+</body>
+</html>
