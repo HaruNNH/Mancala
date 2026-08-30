@@ -41,8 +41,8 @@
         <label for="rule">Rules</label>
         <select id="rule">
           <option value="">Select Rule</option>
-          <option value="basic">Basic</option>
-          <option value="kalaha">Kalaha</option>
+          <option value="Basic">Basic</option>
+          <option value="Kalaha">Kalaha</option>
           <option value="Sunka">Sunka</option>
         </select>
       </div>
@@ -53,13 +53,15 @@
 
   <div class="game-ui hidden" id="gameUI">
     <div class="thinking" id="thinking">Processing…</div>
-    <button class="settings-btn" id="pauseBtn" aria-label="Pause Menu">⚙</button>
+    <button class="settings-btn" id="pauseBtn" aria-label="Pause Menu" title = "Settings">⚙</button>
   </div>
 
   <div class="pause-overlay hidden" id="pauseOverlay">
     <div class="pause-panel">
       <h2>PAUSE</h2>
-
+  
+      <button id="rulesBtn" class="rules-btn" title="ルールを見る">?</button>
+  
       <div class="sound-setting">
         <span class="sound-title">SOUND</span>
         <div class="toggle-switch active" id="soundToggle">
@@ -67,12 +69,60 @@
         </div>
         <span class="sound-status" id="soundStatus">ON</span>
       </div>
-
+  
       <div class="pause-menu-actions">
-        <button class="action-btn" id="resumeBtn">RESUME</button>
+        <button class="action-btn" id="resumeBtn" title = "再開する">RESUME</button>
         <button class="action-btn" id="quitBtn">BACK to MENU</button>
       </div>
     </div>
+  </div>
+
+  <div id="rulesOverlay" class="rules-overlay hidden">
+
+    <div class="rules-panel">
+  
+      <button id="closeRules" class="rules-close">×</button>
+  
+      <h2>RULES</h2>
+  
+      <section>
+        <h3>BASIC</h3>
+  
+        <ul>
+          <li>自分の6つのポケットから1つ選び、そこにある全ての石を取り、反時計回りに1個ずつ置いていく。</li>
+          <li>石を置いたとき最後の石が自分のゴールで終わると、もう一度自分の番になる。</li>
+          <li>自分の６つのポケットを先にすべて空にしたら勝ち。</li>
+        </ul>
+      </section>
+  
+      <section>
+        <h3>KALAHA</h3>
+  
+        <ul>
+          <li>相手のゴールを飛ばしながら、石を反時計回りに1個ずつ置いていく。</li>
+          <li>自分のゴールで最後の石が終わったら、もう一度自分の番になる。</li>
+          <li>空だった自分のポケットに最後の石を置いたら、そのポケットと対面する相手のポケットの石と置いた自分の石を取ってゴールに入れる。</li>
+          <li>どちらかのポケットからすべての石がなくなった時点で終了。</li>
+          <li>終了時、ポケットに残っている石はすべて取り、その人のゴールに入れる。</li>
+          <li>ゴールにある石の総数が多いほうが勝ち。</li>
+        </ul>
+      </section>
+  
+      <section>
+        <h3>SUNKA</h3>
+  
+        <ul>
+          <li>相手のゴールを飛ばしながら、石を反時計回りに1個ずつ置いていく。</li>
+          <li>最後に置いたポケットに、もともと石があった場合、そのポケットの石をすべて取って続けて配る。</li>
+          <li>自分のゴールで最後の石が終わったら、もう一度自分の番になる。</li>
+          <li>どちらかのポケットからすべての石がなくなった時点で終了。</li>
+          <li>終了時、ポケットに残っている石はすべて取り、その人のゴールに入れる。</li>
+          <li>ゴールにある石の総数が多いほうが勝ち。</li>
+        </ul>
+      </section>
+  
+    </div>
+  
   </div>
 
   <div class="result-overlay hidden" id="resultOverlay">
