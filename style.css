@@ -394,3 +394,103 @@
     top: 12px;
   }
 }
+
+/* =========================
+   RULES BUTTON
+   ========================= */
+
+   .rules-btn {
+    width: 28px;
+    height: 28px;
+  
+    border-radius: 50%;
+    border: 1px solid currentColor;
+  
+    background: transparent;
+  
+    font-size: 17px;
+    font-weight: bold;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    cursor: pointer;
+  }
+  
+  
+  /* =========================
+     RULES OVERLAY
+     ========================= */
+  
+  .rules-overlay {
+    position: fixed;
+    inset: 0;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    background: rgba(0, 0, 0, 0.45);
+  
+    z-index: 1000;
+  }
+  
+  .rules-overlay.hidden {
+    display: none;
+  }
+  
+  
+  .rules-panel {
+    position: relative;
+  
+    width: min(520px, 88vw);
+    max-height: 82vh;
+  
+    overflow-y: auto;
+  
+    padding: 28px 30px;
+  
+    background: #f4eadb;
+    border-radius: 18px;
+  
+    box-sizing: border-box;
+  }
+  
+  
+  .rules-panel h2 {
+    margin: 0 0 24px;
+    text-align: center;
+  }
+  
+  
+  .rules-panel h3 {
+    margin: 20px 0 8px;
+  }
+  
+  
+  .rules-panel ul {
+    margin: 0;
+    padding-left: 22px;
+  }
+  
+  
+  .rules-panel li {
+    margin-bottom: 7px;
+    line-height: 1.55;
+  }
+  
+  
+  .rules-close {
+    position: absolute;
+  
+    top: 12px;
+    right: 15px;
+  
+    border: none;
+    background: none;
+  
+    font-size: 28px;
+  
+    cursor: pointer;
+  }
